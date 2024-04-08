@@ -1,0 +1,19 @@
+.users {
+    table,
+    td,
+    th {
+      max-width: 1100px;
+      border: solid rgb(193, 193, 193) 1px;
+      border-collapse: collapse;
+    }
+    
+    table tr:nth-child(even) {
+      background: #f0f0f0;
+    }
+    
+    td,
+    th {
+      padding: 5px 10px;
+    }
+}
+
