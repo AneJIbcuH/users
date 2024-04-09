@@ -23,12 +23,20 @@ export const izhApi = createApi({
       query: (body) => ({
         url: `create`,
         method: "POST",
-        body
+        body,
       }),
       invalidatesTags: [{ type: "Users" }],
+    }),
+    getFood: build.query({
+      query: () => `get-food-list`,
     }),
   }),
 });
 
-export const { useGetUsersQuery, useGetUserQuery, useDeleteUserMutation, useCreateUserMutation } =
-  izhApi;
+export const {
+  useGetUsersQuery,
+  useGetUserQuery,
+  useDeleteUserMutation,
+  useCreateUserMutation,
+  useGetFoodQuery,
+} = izhApi;

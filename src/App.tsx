@@ -6,17 +6,15 @@ import "./App.css";
 import Nav from "./components/Nav";
 
 const App: React.FC = () => {
-
-
   return (
     <Router>
-      <Nav/>
+      <Nav />
         <Routes>
-          <Route path="/" element={<Users/> }></Route>
-          <Route path="/WatchUser/:id" element={<User/> }></Route>
+          <Route path="/" element={<Users />}></Route>
+          <Route path="/WatchUser/:id" element={<User />}></Route>
           <Route path="/CreateUser" element={<CreateUser />}></Route>
         </Routes>
-      </Router>
+    </Router>
   );
 };
 

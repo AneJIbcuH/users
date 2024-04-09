@@ -1,4 +1,8 @@
 .users {
+  table {
+    margin-top: 10px;
+  }  
+  
     table,
     td,
     th {
@@ -15,5 +19,14 @@
     th {
       padding: 5px 10px;
     }
+}
+
+.users-td-iconButton {
+  width: 50px;
+  box-sizing: border-box;
+}
+
+.users {
+/* width: 80%; */
 }
 
