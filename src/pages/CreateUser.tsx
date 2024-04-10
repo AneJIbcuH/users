@@ -152,7 +152,7 @@ const CreateUser: React.FC = () => {
             control={control}
             defaultValue=""
             render={({ field }) => (
-              <TextField label="Имя" onChange={(e) => field.onChange(e)} />
+              <TextField label="Имя" onChange={(e) => field.onChange(e)} defaultValue={user ? user.username : ""}/>
             )}
           />
 
@@ -160,7 +160,7 @@ const CreateUser: React.FC = () => {
             name="email"
             control={control}
             render={({ field }) => (
-              <TextField label="Email" onChange={(e) => field.onChange(e)} />
+              <TextField label="Email" onChange={(e) => field.onChange(e)} defaultValue={user ? user.email : ""}/>
             )}
           />
 
