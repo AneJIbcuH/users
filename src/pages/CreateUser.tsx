@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
-import { useCreateUserMutation, useGetFoodQuery } from "../store/izhApi";
-import { useNavigate } from "react-router-dom";
+import { useCreateUserMutation, useGetFoodQuery, useGetUserQuery } from "../store/izhApi";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -36,10 +36,12 @@ type FormData = {
   email: string;
   birthdate: any;
   upload_photo?: any;
-  favorite_food_ids?: any;
+  favorite_food_ids?: string[];
 };
 
-const CreateUser: React.FC = () => {
+const CreateUser: React.FC = () => {  
+  const { id } = useParams();
+  const { data: user } = useGetUserQuery(id);
   const [photo, setPhoto] = useState<string | undefined>(undefined);
   // const [newfile, setNewFile] = useState<any>(null);
   const [createUser] = useCreateUserMutation();
@@ -47,13 +49,20 @@ const CreateUser: React.FC = () => {
   const { data: foodList } = useGetFoodQuery("");
   const [foodName, setFoodName] = useState<string[]>([]);
 
+  console.log('User данные', user)
+  
+
+
   const { control, handleSubmit } = useForm<FormData>({
     defaultValues: {
-      username: "",
-      email: "",
-      birthdate: "",
+      username: user ? user.username : "misha",
+      email: user ? user.email : "",
+      birthdate: user ? user.birthdate : "",
+      favorite_food_ids: user ? user.favorite_food_ids : ""
     },
   });
+
+  console.log('контрол',control)
 
   const loadPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -82,18 +91,21 @@ const CreateUser: React.FC = () => {
   };
 
   const sendData: SubmitHandler<FormData> = async (data) => {
+    console.log(data.birthdate)
     const newdata = new Date(data.birthdate.$d).toLocaleDateString();
     data.birthdate = newdata;
     // newfile.url = photo;
     // data.upload_photo = newfile;
-    const newFoods = data.favorite_food_ids.map((food: string) => {
-      for (let key in foodList) {
-        if (foodList[key] === food) {
-          return key;
+    if (data.favorite_food_ids) {
+      const newFoods = data.favorite_food_ids.map((food: string) => {
+        for (let key in foodList) {
+          if (foodList[key] === food) {
+            return key;
+          }
         }
-      }
-    });
-    data.favorite_food_ids = newFoods;
+      });
+      data.favorite_food_ids = newFoods;
+    }
 
     console.log(data);
     const resp = await createUser(data).unwrap();
@@ -196,7 +208,7 @@ const CreateUser: React.FC = () => {
                   )}
                   MenuProps={MenuProps}
                 >
-                  {Object.values(foodList).map((food) => (
+                  {Object.values(foodList!).map((food) => (
                     <MenuItem key={food} value={food}>
                       {food}
                     </MenuItem>

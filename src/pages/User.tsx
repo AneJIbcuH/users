@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   useGetUserQuery,
   useDeleteUserMutation,
@@ -13,7 +13,6 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-import { useNavigate } from "react-router-dom";
 
 const User: React.FC = () => {
   const { id } = useParams();
@@ -65,7 +64,11 @@ const User: React.FC = () => {
           </DialogActions>
         </Dialog>
         <div className="btn">
-          <Button color="primary" variant="contained">
+          <Button
+            color="primary"
+            variant="contained"
+            onClick={() => navigate(`/EditUser/${id}`)}
+          >
             Изменить
           </Button>
           <Button color="error" variant="contained" onClick={handleClickOpen}>
@@ -96,7 +99,7 @@ const User: React.FC = () => {
               <td className="user-table-header">Любимая еда</td>
               <td>
                 {data.favorite_food_ids.map((food: string) => (
-                  <p key={food}>{foodList[food]}</p>
+                  <p key={food}>{foodList![food]}</p>
                 ))}
               </td>
             </tr>

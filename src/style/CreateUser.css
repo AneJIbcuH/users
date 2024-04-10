@@ -1,6 +1,5 @@
 .container-createUser {
-     max-width: 60%; 
-    /* min-width: 50%  */
+     min-width: 50%;
 }
 
 .avatar {

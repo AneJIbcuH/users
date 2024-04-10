@@ -1,11 +1,12 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import type { User, FoodList } from "../models/models";
 
 export const izhApi = createApi({
   reducerPath: "izhApi",
   tagTypes: ["Users"],
   baseQuery: fetchBaseQuery({ baseUrl: "http://tasks.tizh.ru/v1/user/" }),
   endpoints: (build) => ({
-    getUsers: build.query({
+    getUsers: build.query<User[], string>({
       query: () => `index`,
       providesTags: [{ type: "Users" }],
     }),
@@ -27,7 +28,7 @@ export const izhApi = createApi({
       }),
       invalidatesTags: [{ type: "Users" }],
     }),
-    getFood: build.query({
+    getFood: build.query<FoodList, string>({
       query: () => `get-food-list`,
     }),
   }),
