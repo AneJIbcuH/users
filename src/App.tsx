@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Users from "./pages/Users";
 import User from "./pages/User";
 import CreateUser from "./pages/CreateUser";
+// import EditUser from "./pages/EditUser";
 import "./App.css";
 import Nav from "./components/Nav";
 

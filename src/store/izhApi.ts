@@ -31,6 +31,14 @@ export const izhApi = createApi({
     getFood: build.query<FoodList, string>({
       query: () => `get-food-list`,
     }),
+    editUser: build.mutation({
+      query: ({id, body}) => ({
+        url: `update?id=${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "Users" }],
+    }),
   }),
 });
 
@@ -40,4 +48,5 @@ export const {
   useDeleteUserMutation,
   useCreateUserMutation,
   useGetFoodQuery,
+  useEditUserMutation
 } = izhApi;
