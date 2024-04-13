@@ -24,7 +24,7 @@ export const izhApi = createApi({
       query: (body) => ({
         url: `create`,
         method: "POST",
-        body,
+        body
       }),
       invalidatesTags: [{ type: "Users" }],
     }),

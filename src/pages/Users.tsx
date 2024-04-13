@@ -1,50 +1,29 @@
 import { useState } from "react";
-import {
-  useGetUsersQuery,
-  useDeleteUserMutation,
-  useGetFoodQuery,
-} from "../store/izhApi";
+import { useGetUsersQuery, useGetFoodQuery } from "../store/izhApi";
+import { useNavigate } from "react-router-dom";
+
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import EditIcon from "@mui/icons-material/Edit";
 import Tooltip from "@mui/material/Tooltip";
-import { useNavigate } from "react-router-dom";
-
 import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
 
+import MyModal from "../components/MyModal";
 import "/src/style/Users.css";
 
 const Users: React.FC = () => {
-  const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [open, setOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<number>();
+  const [modalActive, setModalActive] = useState(false);
   const { data: users, isLoading } = useGetUsersQuery("");
-  const [deleteUser] = useDeleteUserMutation();
   const { data: foodlist } = useGetFoodQuery("");
   const navigate = useNavigate();
 
   if (isLoading) return <h1>Loading...</h1>;
-  console.log(users);
-  console.log(foodlist);
 
-  const handleClickOpen = (id: number) => {
-    setDeleteId(id);
-    setOpen(true);
+  const handleClickOpen = () => {
+    setModalActive(true);
   };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  function deleteUserbyId() {
-    deleteUser(deleteId).unwrap();
-    setOpen(false);
-  }
 
   return (
     <div className="container">
@@ -57,27 +36,12 @@ const Users: React.FC = () => {
           Добавить пользователя
         </Button>
 
-        <Dialog
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-        >
-          <DialogTitle id="alert-dialog-title">
-            {"Подтвердите действие"}
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              Вы уверены, что хотите удалить этот элемент?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={deleteUserbyId}>ОК</Button>
-            <Button onClick={handleClose} autoFocus>
-              Отмена
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <MyModal
+          deleteId={deleteId!}
+          active={modalActive}
+          setActive={setModalActive}
+        />
+
         <table>
           <thead>
             <tr>
@@ -113,10 +77,10 @@ const Users: React.FC = () => {
                     <a href={el.email}>{el.email}</a>
                   </td>
                   <td>{el.birthdate}</td>
-                  {el.favorite_food_ids.filter(el => el != "" && el != null)
+                  {el.favorite_food_ids.filter((el) => el != "" && el != null)
                     .length ? (
                     <td>
-                      {el.favorite_food_ids.map(food => (
+                      {el.favorite_food_ids.map((food) => (
                         <p key={food}>{foodlist![food]}</p>
                       ))}
                     </td>
@@ -146,7 +110,10 @@ const Users: React.FC = () => {
                     <Tooltip title="Удалить">
                       <IconButton
                         color="primary"
-                        onClick={() => handleClickOpen(el.id)}
+                        onClick={() => {
+                          setDeleteId(el.id);
+                          handleClickOpen();
+                        }}
                       >
                         <DeleteIcon />
                       </IconButton>

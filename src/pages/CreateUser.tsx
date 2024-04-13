@@ -55,7 +55,7 @@ const CreateUser: React.FC = () => {
   const { id } = useParams();
   const { data: user } = useGetUserQuery(id);
   const [photo, setPhoto] = useState<string | undefined>(undefined);
-  // const [newfile, setNewFile] = useState<any>(null);
+  const [newfile, setNewFile] = useState<any>(null);
   const [createUser] = useCreateUserMutation();
   const [editUser] = useEditUserMutation();
   const navigate = useNavigate();
@@ -86,28 +86,19 @@ const CreateUser: React.FC = () => {
         setPhoto(reader.result as string);
       };
       reader.readAsDataURL(file);
+
+      const formData = new FormData();
+      formData.append('file', file);
+      setNewFile(formData)
     }
 
-    // const fileObj = {
-    //   description: "Пользователь",
-    //   id: Date.now(),
-    //   name: file!.name,
-    //   mime: file!.type,
-    //   size: file!.size,
-    //   date_create: new Date(file!.lastModified).toISOString(),
-    //   date_update: new Date().toISOString(),
-    //   url: photo,
-    // };
-
-    // setNewFile(fileObj);
   };
 
   const sendData: SubmitHandler<FormData> = async (data) => {
-    // const newdata = new Date(data.birthdate).toLocaleDateString();
+
     data.birthdate = new Date(data.birthdate).toLocaleDateString();
 
-    // newfile.url = photo;
-    // data.upload_photo = newfile;
+    data.upload_photo = newfile;
     if (data.favorite_food_ids) {
       const newFoods = data.favorite_food_ids.map((food: string) => {
         for (let key in foodList) {
@@ -125,9 +116,10 @@ const CreateUser: React.FC = () => {
       console.log("дата измененная PUT", data);
       response = await editUser({ id, data }).unwrap();
     } else {
+      console.log("дата пометоду POST", data);
       response = await createUser(data).unwrap();
     }
-
+    console.log("тело ответа респонс", response);
     navigate(`/WatchUser/${response.id}`);
   };
 
