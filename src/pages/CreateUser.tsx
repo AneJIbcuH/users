@@ -88,14 +88,12 @@ const CreateUser: React.FC = () => {
       reader.readAsDataURL(file);
 
       const formData = new FormData();
-      formData.append('file', file);
-      setNewFile(formData)
+      formData.append("file", file);
+      setNewFile(formData);
     }
-
   };
 
   const sendData: SubmitHandler<FormData> = async (data) => {
-
     data.birthdate = new Date(data.birthdate).toLocaleDateString();
 
     data.upload_photo = newfile;
@@ -123,8 +121,7 @@ const CreateUser: React.FC = () => {
     navigate(`/WatchUser/${response.id}`);
   };
 
-  const handleSetFood = (event: SelectChangeEvent<typeof foodName>, field) => {
-    field.onChange(event);
+  const handleSetFood = (event: SelectChangeEvent<typeof foodName>) => {
     const {
       target: { value },
     } = event;
@@ -192,10 +189,7 @@ const CreateUser: React.FC = () => {
             // defaultValue={user ? user.birthdate : ""}
             render={({ field }) => (
               <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker
-                  {...field}
-                  label="Дата рождения"
-                />
+                <DatePicker {...field} label="Дата рождения" />
               </LocalizationProvider>
             )}
           />
@@ -205,21 +199,15 @@ const CreateUser: React.FC = () => {
             control={control}
             render={({ field }) => (
               <FormControl>
-                <InputLabel id="demo-multiple-chip-label">
-                  Любимая еда
-                </InputLabel>
+                <InputLabel>Любимая еда</InputLabel>
                 <Select
-                  labelId="demo-multiple-chip-label"
-                  id="demo-multiple-chip"
                   multiple
                   value={foodName}
-                  onChange={(e) => handleSetFood(e, field)}
-                  input={
-                    <OutlinedInput
-                      id="select-multiple-chip"
-                      label="Любимая еда"
-                    />
-                  }
+                  onChange={(e) => {
+                    field.onChange(e);
+                    handleSetFood(e);
+                  }}
+                  input={<OutlinedInput label="Любимая еда" />}
                   renderValue={(selected) => (
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                       {selected.map((value) => (
