@@ -3,13 +3,15 @@ import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import {
   useCreateUserMutation,
   useGetFoodQuery,
-  useGetUserQuery,
+  useGetUsersQuery,
   useEditUserMutation,
 } from "../store/izhApi";
 import { useNavigate, useParams } from "react-router-dom";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
+import 'dayjs/locale/en-gb';
+import dayjs, { Dayjs } from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -53,8 +55,11 @@ type FormData = {
 
 const CreateUser: React.FC = () => {
   const { id } = useParams();
-  const { data: user } = useGetUserQuery(id);
-  const [photo, setPhoto] = useState<string | undefined>(undefined);
+  const { data: users } = useGetUsersQuery("");
+  const user = users?.find((el) => el.id == (id as unknown as Number));
+  const [photo, setPhoto] = useState<string | undefined>(
+    user ? `http://tasks.tizh.ru/file/get?id=${user.photo_id}` : undefined
+  );
   const [newfile, setNewFile] = useState<any>(null);
   const [createUser] = useCreateUserMutation();
   const [editUser] = useEditUserMutation();
@@ -69,12 +74,6 @@ const CreateUser: React.FC = () => {
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({
-    // defaultValues: {
-    //   username: user ? user.username : "misha",
-    //   email: user ? user.email : "",
-    //   birthdate: user ? user.birthdate : "",
-    //   favorite_food_ids: user ? user.favorite_food_ids : "",
-    // },
     resolver: yupResolver(schema),
   });
 
@@ -94,8 +93,9 @@ const CreateUser: React.FC = () => {
   };
 
   const sendData: SubmitHandler<FormData> = async (data) => {
+    console.log(data.birthdate);
     data.birthdate = new Date(data.birthdate).toLocaleDateString();
-
+console.log(data.birthdate)
     data.upload_photo = newfile;
     if (data.favorite_food_ids) {
       const newFoods = data.favorite_food_ids.map((food: string) => {
@@ -186,10 +186,13 @@ const CreateUser: React.FC = () => {
           <Controller
             name="birthdate"
             control={control}
-            // defaultValue={user ? user.birthdate : ""}
+            defaultValue={user ? dayjs(user.birthdate) : null}
             render={({ field }) => (
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker {...field} label="Дата рождения" />
+              <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-gb">
+                <DatePicker
+                  {...field}
+                  label="Дата рождения"
+                />
               </LocalizationProvider>
             )}
           />

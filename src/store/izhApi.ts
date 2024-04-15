@@ -35,7 +35,7 @@ export const izhApi = createApi({
       query: ({id, body}) => ({
         url: `update?id=${id}`,
         method: "PUT",
-        body,
+        body
       }),
       invalidatesTags: [{ type: "Users" }],
     }),
