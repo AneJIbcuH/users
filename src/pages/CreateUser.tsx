@@ -10,7 +10,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
-import 'dayjs/locale/en-gb';
+import "dayjs/locale/en-gb";
 import dayjs, { Dayjs } from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -93,9 +93,10 @@ const CreateUser: React.FC = () => {
   };
 
   const sendData: SubmitHandler<FormData> = async (data) => {
-    console.log(data.birthdate);
+    console.log("день рождения первое", data.birthdate);
     data.birthdate = new Date(data.birthdate).toLocaleDateString();
-console.log(data.birthdate)
+    console.log("день рождения новое", data.birthdate);
+    console.log('из адаптера', dayjs(data.birthdate))
     data.upload_photo = newfile;
     if (data.favorite_food_ids) {
       const newFoods = data.favorite_food_ids.map((food: string) => {
@@ -186,12 +187,16 @@ console.log(data.birthdate)
           <Controller
             name="birthdate"
             control={control}
-            defaultValue={user ? dayjs(user.birthdate) : null}
+            // defaultValue={user ? dayjs(user.birthdate) : null}
             render={({ field }) => (
-              <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-gb">
+              <LocalizationProvider
+                dateAdapter={AdapterDayjs}
+                adapterLocale="en-gb"
+              >
                 <DatePicker
                   {...field}
                   label="Дата рождения"
+                  value={user ? dayjs(user.birthdate) : null}
                 />
               </LocalizationProvider>
             )}
