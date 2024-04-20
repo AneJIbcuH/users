@@ -11,7 +11,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
 import "dayjs/locale/en-gb";
-import dayjs, { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -23,7 +23,7 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
+import Select from "@mui/material/Select";
 import Chip from "@mui/material/Chip";
 
 import "/src/style/CreateUser.css";
@@ -45,7 +45,7 @@ const schema = yup.object().shape({
   birthdate: yup.date().required('Необходимо заполнить "Дата рождения"'),
 });
 
-type FormData = {
+type MyFormData = {
   username: string;
   email: string;
   birthdate: any;
@@ -58,14 +58,29 @@ const CreateUser: React.FC = () => {
   const { data: users } = useGetUsersQuery("");
   const user = users?.find((el) => el.id == (id as unknown as Number));
   const [photo, setPhoto] = useState<string | undefined>(
-    user ? `http://tasks.tizh.ru/file/get?id=${user.photo_id}` : undefined
+    user?.photo_id
+      ? `http://tasks.tizh.ru/file/get?id=${user!.photo_id}`
+      : undefined
   );
   const [newfile, setNewFile] = useState<any>(null);
   const [createUser] = useCreateUserMutation();
   const [editUser] = useEditUserMutation();
   const navigate = useNavigate();
   const { data: foodList } = useGetFoodQuery("");
-  const [foodName, setFoodName] = useState<string[]>([]);
+  const [foodName, setFoodName] = useState<string[]>(
+    user?.favorite_food_ids! ? convertFoodIdNameTo(user.favorite_food_ids) : []
+  );
+
+  function convertFoodIdNameTo(arr: string[]) {
+    const newArr = arr.map((food: string) => {
+      for (let key in foodList) {
+        if (key === food) {
+          return foodList[key];
+        }
+      }
+    });
+    return newArr;
+  }
 
   console.log("User данные", user);
 
@@ -73,7 +88,7 @@ const CreateUser: React.FC = () => {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormData>({
+  } = useForm<MyFormData>({
     resolver: yupResolver(schema),
   });
 
@@ -86,27 +101,28 @@ const CreateUser: React.FC = () => {
       };
       reader.readAsDataURL(file);
 
-      const formData = new FormData();
-      formData.append("file", file);
-      setNewFile(formData);
+      // const formData = new FormData();
+      // formData.append("file", file);
+      // setNewFile(formData);
     }
   };
 
-  const sendData: SubmitHandler<FormData> = async (data) => {
-    console.log("день рождения первое", data.birthdate);
+  function convertFoodNameToId(arr: string[]) {
+    const newArr = arr.map((food: string) => {
+      for (let key in foodList) {
+        if (foodList[key] === food) {
+          return key;
+        }
+      }
+    });
+    return newArr;
+  }
+
+  const sendData: SubmitHandler<MyFormData> = async (data) => {
     data.birthdate = new Date(data.birthdate).toLocaleDateString();
-    console.log("день рождения новое", data.birthdate);
-    console.log('из адаптера', dayjs(data.birthdate))
     data.upload_photo = newfile;
     if (data.favorite_food_ids) {
-      const newFoods = data.favorite_food_ids.map((food: string) => {
-        for (let key in foodList) {
-          if (foodList[key] === food) {
-            return key;
-          }
-        }
-      });
-      data.favorite_food_ids = newFoods;
+      data.favorite_food_ids = convertFoodNameToId(data.favorite_food_ids);
     }
 
     let response;
@@ -122,39 +138,37 @@ const CreateUser: React.FC = () => {
     navigate(`/WatchUser/${response.id}`);
   };
 
-  const handleSetFood = (event: SelectChangeEvent<typeof foodName>) => {
-    const {
-      target: { value },
-    } = event;
-    setFoodName(typeof value === "string" ? value.split(",") : value);
-    console.log(foodName);
-  };
-
   return (
     <div className="container">
       <div className="container-createUser">
-        <div className="avatar">
-          <img
-            src={
-              photo
-                ? photo
-                : "https://tasks.tizh.ru/images/user-placeholder.png"
-            }
-            alt=""
-          />
-          <input
-            type="file"
-            id="photo-input"
-            hidden
-            accept="image/*"
-            onChange={loadPhoto}
-          />
-          <label htmlFor="photo-input" className="label-photo-input">
-            Заменить
-          </label>
-        </div>
-
         <form className="inputs" onSubmit={handleSubmit(sendData)}>
+          <Controller
+            name="upload_photo"
+            control={control}
+            render={({ field }) => (
+              <div className="avatar">
+                <img
+                  src={
+                    photo
+                      ? photo
+                      : "https://tasks.tizh.ru/images/user-placeholder.png"
+                  }
+                  alt=""
+                />
+                <input
+                  type="file"
+                  id="photo-input"
+                  hidden
+                  accept="image/*"
+                  onChange={loadPhoto}
+                />
+                <label htmlFor="photo-input" className="label-photo-input">
+                  Заменить
+                </label>
+              </div>
+            )}
+          />
+
           <Controller
             name="username"
             control={control}
@@ -187,16 +201,30 @@ const CreateUser: React.FC = () => {
           <Controller
             name="birthdate"
             control={control}
-            // defaultValue={user ? dayjs(user.birthdate) : null}
             render={({ field }) => (
               <LocalizationProvider
                 dateAdapter={AdapterDayjs}
                 adapterLocale="en-gb"
               >
-                <DatePicker
+                <DatePicker                
                   {...field}
-                  label="Дата рождения"
-                  value={user ? dayjs(user.birthdate) : null}
+                  label="Дата рождения" 
+                  slotProps={{
+                    textField: {
+                      error: !!errors.birthdate,
+                      helperText: errors.birthdate ? errors.birthdate.message : "",
+                    },
+                  }}            
+                  value={
+                    user
+                      ? dayjs(
+                          user.birthdate.replace(
+                            /(\d+).(\d+).(\d+)/,
+                            "$3/$2/$1"
+                          )
+                        )
+                      : null
+                  }
                 />
               </LocalizationProvider>
             )}
@@ -213,7 +241,11 @@ const CreateUser: React.FC = () => {
                   value={foodName}
                   onChange={(e) => {
                     field.onChange(e);
-                    handleSetFood(e);
+                    setFoodName(
+                      typeof e.target.value === "string"
+                        ? e.target.value.split(",")
+                        : e.target.value
+                    );
                   }}
                   input={<OutlinedInput label="Любимая еда" />}
                   renderValue={(selected) => (
