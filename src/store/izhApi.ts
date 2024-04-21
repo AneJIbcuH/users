@@ -32,10 +32,10 @@ export const izhApi = createApi({
       query: () => `get-food-list`,
     }),
     editUser: build.mutation({
-      query: ({id, body}) => ({
+      query: ({id, data}) => ({
         url: `update?id=${id}`,
         method: "PUT",
-        body
+        body: data
       }),
       invalidatesTags: [{ type: "Users" }],
     }),

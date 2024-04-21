@@ -55,6 +55,7 @@ type MyFormData = {
 
 const CreateUser: React.FC = () => {
   const { id } = useParams();
+
   const { data: users } = useGetUsersQuery("");
   const user = users?.find((el) => el.id == (id as unknown as Number));
   const [photo, setPhoto] = useState<string | undefined>(
@@ -62,7 +63,6 @@ const CreateUser: React.FC = () => {
       ? `http://tasks.tizh.ru/file/get?id=${user!.photo_id}`
       : undefined
   );
-  const [newfile, setNewFile] = useState<any>(null);
   const [createUser] = useCreateUserMutation();
   const [editUser] = useEditUserMutation();
   const navigate = useNavigate();
@@ -72,14 +72,18 @@ const CreateUser: React.FC = () => {
   );
 
   function convertFoodIdNameTo(arr: string[]) {
-    const newArr = arr.map((food: string) => {
-      for (let key in foodList) {
-        if (key === food) {
-          return foodList[key];
+    if (arr.filter((el) => el != null && el != "").length == 0) {
+      return [];
+    } else {
+      const newArr = arr.map((food: string) => {
+        for (let key in foodList) {
+          if (key === food) {
+            return foodList[key];
+          }
         }
-      }
-    });
-    return newArr;
+      });
+      return newArr;
+    }
   }
 
   console.log("User данные", user);
@@ -100,10 +104,6 @@ const CreateUser: React.FC = () => {
         setPhoto(reader.result as string);
       };
       reader.readAsDataURL(file);
-
-      // const formData = new FormData();
-      // formData.append("file", file);
-      // setNewFile(formData);
     }
   };
 
@@ -120,7 +120,7 @@ const CreateUser: React.FC = () => {
 
   const sendData: SubmitHandler<MyFormData> = async (data) => {
     data.birthdate = new Date(data.birthdate).toLocaleDateString();
-    data.upload_photo = newfile;
+    data.upload_photo = photo;
     if (data.favorite_food_ids) {
       data.favorite_food_ids = convertFoodNameToId(data.favorite_food_ids);
     }
@@ -129,7 +129,7 @@ const CreateUser: React.FC = () => {
 
     if (user) {
       console.log("дата измененная PUT", data);
-      response = await editUser({ id, data }).unwrap();
+      response = await editUser({ id: id, data }).unwrap();
     } else {
       console.log("дата пометоду POST", data);
       response = await createUser(data).unwrap();
@@ -201,30 +201,30 @@ const CreateUser: React.FC = () => {
           <Controller
             name="birthdate"
             control={control}
+            defaultValue={user
+              ? dayjs(
+                  user.birthdate.replace(
+                    /(\d+).(\d+).(\d+)/,
+                    "$3/$2/$1"
+                  )
+                )
+              : null}
             render={({ field }) => (
               <LocalizationProvider
                 dateAdapter={AdapterDayjs}
                 adapterLocale="en-gb"
               >
-                <DatePicker                
+                <DatePicker
                   {...field}
-                  label="Дата рождения" 
+                  label="Дата рождения"
                   slotProps={{
                     textField: {
                       error: !!errors.birthdate,
-                      helperText: errors.birthdate ? errors.birthdate.message : "",
+                      helperText: errors.birthdate
+                        ? errors.birthdate.message
+                        : "",
                     },
-                  }}            
-                  value={
-                    user
-                      ? dayjs(
-                          user.birthdate.replace(
-                            /(\d+).(\d+).(\d+)/,
-                            "$3/$2/$1"
-                          )
-                        )
-                      : null
-                  }
+                  }}
                 />
               </LocalizationProvider>
             )}

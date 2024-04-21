@@ -11,7 +11,7 @@ const User: React.FC = () => {
   const { data: foodList } = useGetFoodQuery("");
   const [modalActive, setModalActive] = useState(false);
   const navigate = useNavigate();
-
+  
   if (isLoading) return <h1>Loading...</h1>;
 
   const handleClickOpen = () => {
