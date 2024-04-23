@@ -55,7 +55,6 @@ type MyFormData = {
 
 const CreateUser: React.FC = () => {
   const { id } = useParams();
-
   const { data: users } = useGetUsersQuery("");
   const user = users?.find((el) => el.id == (id as unknown as Number));
   const [photo, setPhoto] = useState<string | undefined>(
@@ -68,10 +67,10 @@ const CreateUser: React.FC = () => {
   const navigate = useNavigate();
   const { data: foodList } = useGetFoodQuery("");
   const [foodName, setFoodName] = useState<string[]>(
-    user?.favorite_food_ids! ? convertFoodIdNameTo(user.favorite_food_ids) : []
+    user?.favorite_food_ids! ? convertFoodIdToName(user.favorite_food_ids) : []
   );
 
-  function convertFoodIdNameTo(arr: string[]) {
+  function convertFoodIdToName(arr: string[]) {
     if (arr.filter((el) => el != null && el != "").length == 0) {
       return [];
     } else {
@@ -89,6 +88,7 @@ const CreateUser: React.FC = () => {
   console.log("User данные", user);
 
   const {
+    register,
     control,
     handleSubmit,
     formState: { errors },
@@ -96,15 +96,15 @@ const CreateUser: React.FC = () => {
     resolver: yupResolver(schema),
   });
 
-  const loadPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setPhoto(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+  const loadPhoto = (file) => {
+    // const file = e.target.files?.[0];
+    // if (file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPhoto(reader.result as string);
+    };
+    reader.readAsDataURL(file?.[0]);
+    // }
   };
 
   function convertFoodNameToId(arr: string[]) {
@@ -119,10 +119,16 @@ const CreateUser: React.FC = () => {
   }
 
   const sendData: SubmitHandler<MyFormData> = async (data) => {
+    console.log(data.upload_photo)
     data.birthdate = new Date(data.birthdate).toLocaleDateString();
-    data.upload_photo = photo;
+    // data.upload_photo = photo;
     if (data.favorite_food_ids) {
       data.favorite_food_ids = convertFoodNameToId(data.favorite_food_ids);
+    }
+
+    if (data.upload_photo) {
+      loadPhoto(data.upload_photo);
+      data.upload_photo = data.upload_photo?.[0]
     }
 
     let response;
@@ -142,7 +148,7 @@ const CreateUser: React.FC = () => {
     <div className="container">
       <div className="container-createUser">
         <form className="inputs" onSubmit={handleSubmit(sendData)}>
-          <Controller
+          {/* <Controller
             name="upload_photo"
             control={control}
             render={({ field }) => (
@@ -160,14 +166,39 @@ const CreateUser: React.FC = () => {
                   id="photo-input"
                   hidden
                   accept="image/*"
-                  onChange={loadPhoto}
+                  {...field}
+                  // onChange={loadPhoto}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    field.onChange(file)}}
                 />
                 <label htmlFor="photo-input" className="label-photo-input">
                   Заменить
                 </label>
               </div>
             )}
-          />
+          /> */}
+
+          <div className="avatar">
+            <img
+              src={
+                photo
+                  ? photo
+                  : "https://tasks.tizh.ru/images/user-placeholder.png"
+              }
+              alt=""
+            />
+            <input
+              {...register("upload_photo")}
+              type="file"
+              id="photo-input"
+              hidden
+              accept="image/*"
+            />
+            <label htmlFor="photo-input" className="label-photo-input">
+              Заменить
+            </label>
+          </div>
 
           <Controller
             name="username"
@@ -201,14 +232,11 @@ const CreateUser: React.FC = () => {
           <Controller
             name="birthdate"
             control={control}
-            defaultValue={user
-              ? dayjs(
-                  user.birthdate.replace(
-                    /(\d+).(\d+).(\d+)/,
-                    "$3/$2/$1"
-                  )
-                )
-              : null}
+            defaultValue={
+              user
+                ? dayjs(user.birthdate.replace(/(\d+).(\d+).(\d+)/, "$3/$2/$1"))
+                : null
+            }
             render={({ field }) => (
               <LocalizationProvider
                 dateAdapter={AdapterDayjs}

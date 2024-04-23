@@ -12,6 +12,7 @@ export const izhApi = createApi({
     }),
     getUser: build.query({
       query: (id) => `view?id=${id}`,
+      providesTags: [{ type: "Users" }],
     }),
     deleteUser: build.mutation({
       query: (id) => ({
